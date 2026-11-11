@@ -17,9 +17,13 @@ export default function App(){
 useEffect(() => {
   void load();
 }, []);
-  async function submit(e:FormEvent){ e.preventDefault(); if(!form.title.trim()) return; await createTodo(form); setForm(empty); load(); }
-  async function status(id:number,value:TodoStatus){ await changeStatus(id,value); load(); }
-  async function remove(id:number){ if(confirm('Vill du ta bort uppgiften?')) { await deleteTodo(id); load(); } }
+  async function run(action:()=>Promise<unknown>, message:string){
+    try { setError(''); await action(); load(); }
+    catch { setError(message); }
+  }
+  async function submit(e:FormEvent){ e.preventDefault(); if(!form.title.trim()) { setError('Ange en rubrik.'); return; } await run(async()=>{ await createTodo(form); setForm(empty); }, 'Kunde inte spara uppgiften.'); }
+  async function status(id:number,value:TodoStatus){ await run(()=>changeStatus(id,value), 'Kunde inte ändra status.'); }
+  async function remove(id:number){ if(confirm('Vill du ta bort uppgiften?')) await run(()=>deleteTodo(id), 'Kunde inte ta bort uppgiften.'); }
   return <main>
     <header><p className="eyebrow">ASP.NET Core + React</p><h1>Att göra-lista</h1><p>.NET-version med PostgreSQL och komplett statushistorik.</p></header>
     <section className="panel"><h2>Ny uppgift</h2><form onSubmit={submit}>
