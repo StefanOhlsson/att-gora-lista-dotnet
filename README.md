@@ -29,15 +29,15 @@ API-kontraktet följer originalets huvudendpoints så att frontend kan använda 
 ## Arkitektur
 
 ```text
-frontend (React, port 5173/80)
+frontend (React, lokalt 5173 / Docker http://localhost:5174)
         |
         | HTTP / JSON
         v
-backend (ASP.NET Core, port 8080)
+backend (ASP.NET Core, lokalt 8080 / Docker 8081)
         |
         | Entity Framework Core
         v
-PostgreSQL (port 5432)
+PostgreSQL (lokalt 5432 / Docker 5433)
 ```
 
 Backend är uppdelad i tydliga lager:
@@ -71,11 +71,26 @@ Från repositoryts rot:
 docker compose up --build
 ```
 
-Öppna sedan:
+Första gången tar bygget en stund eftersom Docker-avbildningarna för backend och frontend byggs. Applikationen är uppe när loggen visar att backend lyssnar (`Now listening on: http://[::]:8080`) och frontend-containern har startat.
 
-- Frontend: http://localhost:5555
-- Backend API: http://localhost:8080/api/todos
-- Swagger: http://localhost:8080/swagger
+### Använd applikationen
+
+När applikationen är uppe startar man en webbläsare och går till:
+
+**http://localhost:5174/**
+
+Där visas att göra-listan, och du kan skapa, redigera, ändra status på och ta bort uppgifter. Exempeldata skapas automatiskt första gången databasen startas.
+
+Övriga adresser när lösningen körs i Docker:
+
+| Tjänst | Adress |
+|---|---|
+| Frontend (webbapplikationen) | http://localhost:5174/ |
+| Backend API | http://localhost:8081/api/todos |
+| Swagger | http://localhost:8081/swagger |
+| PostgreSQL | `localhost:5433` (användare `postgres`, lösenord `postgres`) |
+
+> Portarna på värddatorn (5174, 8081 och 5433) skiljer sig från standardportarna så att Docker-versionen kan köras samtidigt som en lokal utvecklingsmiljö eller originalprojektet.
 
 Stoppa lösningen:
 
@@ -98,6 +113,8 @@ Skapa en databas och användare, eller använd PostgreSQL från `docker-compose.
 ```bash
 docker compose up db -d
 ```
+
+Observera att databasen från `docker-compose.yml` exponeras på port **5433** på värddatorn. Använd i så fall `Port=5433` i anslutningssträngen (se steg 2).
 
 ### 2. Starta backend
 
@@ -123,6 +140,8 @@ cd frontend
 npm install
 npm run dev
 ```
+
+Öppna sedan http://localhost:5173/ i webbläsaren. Backend-API:t nås på http://localhost:8080/api/todos.
 
 ## API-exempel
 
